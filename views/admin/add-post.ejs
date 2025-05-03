@@ -1,4 +1,11 @@
 <a href="/dashboard">&larr; Back</a>
+
+<% if (req.query.success) { %>
+  <div class="alert alert-success">Post Added successfully!</div>
+<% } else if (req.query.error) { %>
+  <div class="alert alert-danger">Something went wrong. Please try again.</div>
+<% } %>
+
 <div class="admin-title">
   <h2>Add New Post</h2>
 </div>

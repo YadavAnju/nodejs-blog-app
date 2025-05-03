@@ -38,6 +38,12 @@ app.use(expressLayout);
 app.set('layout', './layouts/main');
 app.set('view engine', 'ejs');
 
+//Add middleware to inject login status into views
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn || false;
+  next();
+});
+
 
 app.locals.isActiveRoute = isActiveRoute; 
 

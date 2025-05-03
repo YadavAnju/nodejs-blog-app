@@ -16,10 +16,12 @@
 
   </nav>
 
+  <% if (isAuthenticated) { %>
   <div class="header__button">
     <a href="/logout">
       Logout
     </a>
   </div>
+  <% } %>
 
 </header>

@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
+const Contact = require('../models/Contact');
+
 
 /**
  * GET /
@@ -126,6 +128,42 @@ router.get('/about', (req, res) => {
   res.render('about', {
     currentRoute: '/about'
   });
+});
+
+/**
+ * GET /
+ * Contact
+*/
+router.get('/contact', (req, res) => {
+  res.render('contact', {
+    currentRoute: '/contact',
+    req 
+  });
+});
+
+/**
+ * POST /
+ * Save Contact
+*/
+router.post('/contact', async (req, res) => {
+  try {
+    try {
+      const newContact = new Contact({
+        name: req.body.name,
+        email: req.body.email,
+        message: req.body.message
+      });
+
+      await Contact.create(newContact);
+      res.redirect('/contact?success=true');
+    } catch (error) {
+      console.log(error);
+      res.redirect('/contact?error=true');
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 

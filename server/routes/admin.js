@@ -17,7 +17,8 @@ const authMiddleware = (req, res, next ) => {
   const token = req.cookies.token;
 
   if(!token) {
-    return res.status(401).json( { message: 'Unauthorized'} );
+    // return res.status(401).json( { message: 'Unauthorized'} );
+    res.status(401).redirect('/access-denied');
   }
 
   try {
@@ -35,6 +36,9 @@ const authMiddleware = (req, res, next ) => {
  * Admin - Login Page
 */
 router.get('/admin', async (req, res) => {
+  if (req.session.isLoggedIn) {
+    return res.redirect('/dashboard');
+  }
   try {
     const locals = {
       title: "Admin",
@@ -70,6 +74,10 @@ router.post('/admin', async (req, res) => {
 
     const token = jwt.sign({ userId: user._id}, jwtSecret );
     res.cookie('token', token, { httpOnly: true });
+
+    // Set session value for UI conditionals
+    req.session.isLoggedIn = true;
+
     res.redirect('/dashboard');
 
   } catch (error) {
@@ -117,7 +125,8 @@ router.get('/add-post', authMiddleware, async (req, res) => {
     const data = await Post.find();
     res.render('admin/add-post', {
       locals,
-      layout: adminLayout
+      layout: adminLayout,
+      req
     });
 
   } catch (error) {
@@ -140,9 +149,10 @@ router.post('/add-post', authMiddleware, async (req, res) => {
       });
 
       await Post.create(newPost);
-      res.redirect('/dashboard');
+      res.redirect('/add-post?success=true');
     } catch (error) {
       console.log(error);
+      res.redirect('/add-post?error=true');
     }
 
   } catch (error) {
@@ -168,7 +178,8 @@ router.get('/edit-post/:id', authMiddleware, async (req, res) => {
     res.render('admin/edit-post', {
       locals,
       data,
-      layout: adminLayout
+      layout: adminLayout,
+      req
     })
 
   } catch (error) {
@@ -191,7 +202,7 @@ router.put('/edit-post/:id', authMiddleware, async (req, res) => {
       updatedAt: Date.now()
     });
 
-    res.redirect(`/edit-post/${req.params.id}`);
+    res.redirect(`/edit-post/${req.params.id}?success=true`);
 
   } catch (error) {
     console.log(error);
@@ -264,7 +275,24 @@ router.delete('/delete-post/:id', authMiddleware, async (req, res) => {
 router.get('/logout', (req, res) => {
   res.clearCookie('token');
   //res.json({ message: 'Logout successful.'});
-  res.redirect('/');
+  req.session.destroy(err => {
+    if (err) {
+      console.log(err);
+    }
+
+  res.redirect('/admin');
+  });
+});
+
+/**
+ * GET /
+ * Access Denied
+*/
+router.get('/access-denied', (req, res) => {
+  res.status(401).render('access_denied', {
+    currentRoute: '/access-denied',
+    isAuthenticated: req.session.isLoggedIn || false
+  });
 });
 
 
